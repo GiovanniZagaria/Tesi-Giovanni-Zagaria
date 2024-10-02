@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Assembly-CSharp.csproj", "{64df2fd8-d727-ecdc-8beb-0b2db3b0e90a}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.PlayerPrefsEditor.Editor", "Unity.PlayerPrefsEditor.Editor.csproj", "{f96e7c14-1c6e-31de-234e-a2c9b59f38c1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{920ccc8a-d2bd-e4a0-b8a0-082ff2452e59}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.PlayerPrefsEditor.Samples.SampleScene", "Unity.PlayerPrefsEditor.Samples.SampleScene.csproj", "{e9231f01-4443-dc2d-bba3-021dafb1edcc}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.PlayerPrefsEditor.EditorResources", "Unity.PlayerPrefsEditor.EditorResources.csproj", "{955fbfed-5e5f-3045-463b-63e748474a51}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{64df2fd8-d727-ecdc-8beb-0b2db3b0e90a}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{64df2fd8-d727-ecdc-8beb-0b2db3b0e90a}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{f96e7c14-1c6e-31de-234e-a2c9b59f38c1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{f96e7c14-1c6e-31de-234e-a2c9b59f38c1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{920ccc8a-d2bd-e4a0-b8a0-082ff2452e59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{920ccc8a-d2bd-e4a0-b8a0-082ff2452e59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{e9231f01-4443-dc2d-bba3-021dafb1edcc}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{e9231f01-4443-dc2d-bba3-021dafb1edcc}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{955fbfed-5e5f-3045-463b-63e748474a51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{955fbfed-5e5f-3045-463b-63e748474a51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
