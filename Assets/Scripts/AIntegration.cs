@@ -1,92 +1,56 @@
-using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using System.Net.Http;
 using System.Text;
-using Newtonsoft.Json; 
-using System.Collections.Generic; // Per l'uso delle liste
+using Newtonsoft.Json;
 
 public class AIntegration : MonoBehaviour
 {
-    private static readonly HttpClient client = new HttpClient();
-    private string apiUrl = "https://api.together.ai/v1/suggestions"; // Sostituisci con l'endpoint reale
+    // Endpoint aggiornato per il modello specifico di Together.ai
+    private static readonly string apiUrl = "https://api.together.xyz/playground/chat/meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo";
+    private static readonly string apiKey = "29753fd69be8903061f2b955add0fae38638917867f0ebe08ef643d2a75372be";
 
-    public async void GetSuggestion(string userInput)
+    public static IEnumerator GetAiSuggestion(string cardData, string previousStory, System.Action<string> onCompletion)
     {
-        // Crea la richiesta da inviare all'API
-        var requestBody = new
+        string input = previousStory + "\n\nCard Information: " + cardData + "\nGenerate a story suggestion for a child-friendly game. Ensure the content is appropriate for children (no offensive language).";
+
+        var postData = new
         {
-            model = "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo", // Modello da usare
-            messages = new List<object> { new { role = "user", content = userInput } }, // Messaggi precedenti
-            max_tokens = 1000, // Numero massimo di token
-            temperature = 0.7, // Controllo della creatività
-            top_p = 1, // Parametro di diversità
-            top_k = 50, // Altro parametro di diversità
-            repetition_penalty = 1, 
-            stop = new[] { "<|eot_id|>", "<|eom_id|>" } //interruzione
+            model = "meta-llama/Llama-3.2-11B-Vision-Instruct-Turbo", // Modello IA aggiornato
+            messages = new List<object>
+            {
+                new {
+                    role = "system", 
+                    content = "You are a helpful assistant in a storytelling game."
+                },
+                new {
+                    role = "user", 
+                    content = input
+                }
+            },
+            max_tokens = 512,   // Numero di token massimi
+            temperature = 0.7,  // Creatività
+            top_p = 0.7,        // Parametro di campionamento
+            top_k = 50,         // Numero massimo di candidati durante la generazione
+            repetition_penalty = 1.0, // Penalità per ripetizioni
+            stop = new string[] {"<|eot_id|>", "<|eom_id|>"}, // Token di stop
+            stream = false      // No streaming per semplificare la gestione
         };
 
-        // Invia la richiesta all'API
-        var content = new StringContent(JsonConvert.SerializeObject(requestBody), Encoding.UTF8, "application/json");
-        var response = await client.PostAsync(apiUrl, content);
-
-        if (response.IsSuccessStatusCode)
+        using (HttpClient client = new HttpClient())
         {
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var suggestion = JsonConvert.DeserializeObject<AIResponse>(jsonResponse);
-            // Gestisci il suggerimento qui (ad esempio, visualizzalo nel gioco)
-            Debug.Log("Suggerimento dall'IA: " + suggestion.choices[0].message.content);
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+            string jsonContent = JsonConvert.SerializeObject(postData);
+            StringContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            HttpResponseMessage response = await client.PostAsync(apiUrl, content);
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            var responseObject = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseBody);
+            string generatedText = responseObject["choices"][0]["message"]["content"].ToString();
+
+            onCompletion(generatedText);
         }
-        else
-        {
-            Debug.LogError("Errore nella richiesta all'API: " + response.StatusCode);
-        }
-    }
-
-    // Crea una classe per deserializzare la risposta dall'API
-    public class AIResponse
-    {
-        public List<Choice> choices; // Lista di scelte
-
-        public class Choice
-        {
-            public Message message;
-        }
-
-        public class Message
-        {
-            public string content; // Contenuto del messaggio
-        }
-    }
-
-    // Censura contenuti inappropriati
-    private string CensorContent(string input)
-    {
-        string[] inappropriateWords = { "cazzo", "vaffanculo" };
-        foreach (var word in inappropriateWords)
-        {
-            input = input.Replace(word, "****"); // Censura la parola
-        }
-        return input;
-    }
-
-    // Salva la scelta dell'utente
-    public void SaveUserChoice(string choice)
-    {
-        PlayerPrefs.SetString("UserChoice", choice);
-        PlayerPrefs.Save();
-    }
-
-    // Carica la scelta precedente dell'utente
-    public string LoadUserChoice()
-    {
-        return PlayerPrefs.GetString("UserChoice", "");
-    }
-
-    // Gestisci la scelta della carta
-    public void OnCardChosen(string card)
-    {
-        string previousChoices = LoadUserChoice();
-        GetSuggestion(previousChoices + " " + card); // Invoca la funzione di suggerimento
-        SaveUserChoice(card); // Salva la scelta corrente
     }
 }
