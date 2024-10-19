@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
 public class FlaskManager : MonoBehaviour
 {
@@ -8,26 +7,26 @@ public class FlaskManager : MonoBehaviour
 
     void Start()
     {
-        // Avvia il server Flask eseguendo app.py
-        StartFlaskServer();
+        StartFlaskServer(); // Avvia il server Flask quando l'applicazione Unity parte
     }
 
     private void StartFlaskServer()
     {
-        // Specifica il percorso di Python e dello script app.py
-        string pythonPath = @"C:\Users\miche\anaconda3\python.exe"; // Modifica con il percorso del tuo Python
-        string appPath = @"C:\Users\miche\OneDrive\Desktop\Giovanni\FlaskApp\app.py"; // Assicurati di includere il nome del file
+        // Specifica il percorso di Python e lo script app.py
+        string pythonPath = @"C:\Users\miche\anaconda3\python.exe"; // Aggiorna con il tuo percorso di Python
+        string appPath = @"C:\Users\miche\OneDrive\Desktop\Giovanni\Tesi-Giovanni-Zagaria\Assets\FlaskApp\app.py"; // Percorso corretto di app.py
 
-        ProcessStartInfo startInfo = new ProcessStartInfo();
-        startInfo.FileName = pythonPath;
-        startInfo.Arguments = $"\"{appPath}\""; // Includi le virgolette per gestire gli spazi nel percorso
-        startInfo.RedirectStandardOutput = true;
-        startInfo.RedirectStandardError = true;
-        startInfo.UseShellExecute = false;
-        startInfo.CreateNoWindow = true;
+        ProcessStartInfo startInfo = new ProcessStartInfo
+        {
+            FileName = pythonPath,
+            Arguments = $"\"{appPath}\"", // Aggiungi le virgolette per gestire gli spazi nel percorso
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
 
-        flaskProcess = new Process();
-        flaskProcess.StartInfo = startInfo;
+        flaskProcess = new Process { StartInfo = startInfo };
         flaskProcess.Start();
 
         Debug.Log("Flask server avviato.");
@@ -35,11 +34,12 @@ public class FlaskManager : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        // Termina il processo di Flask quando l'applicazione Unity viene chiusa
         if (flaskProcess != null && !flaskProcess.HasExited)
         {
-            flaskProcess.Kill();
+            flaskProcess.Kill(); // Chiudi il processo Flask quando Unity si chiude
             Debug.Log("Flask server fermato.");
         }
     }
 }
+
+ 
