@@ -62,11 +62,25 @@ public class UIManager : MonoBehaviour
 
     // Callback per gestire la risposta dell'IA con successo
     private void OnAISuccess(string suggestion)
+{
+    if (storyTextbox != null)
     {
-        // Mostra il suggerimento nella TextBox
-        storyTextbox.GetComponent<Text>().text = suggestion;
-        storyManager.AppendToStory(suggestion);  // Aggiungi il suggerimento alla storia
+        var textComponent = storyTextbox.GetComponent<Text>();
+        if (textComponent != null)
+        {
+            textComponent.text = suggestion; // Imposta il testo solo se non è nullo
+            storyManager.AppendToStory(suggestion);  // Aggiungi il suggerimento alla storia
+        }
+        else
+        {
+            Debug.LogError("Componente Text mancante su storyTextbox.");
+        }
     }
+    else
+    {
+        Debug.LogError("storyTextbox non assegnato in UIManager.");
+    }
+}
 
     // Callback in caso di errore nella chiamata all'IA
     private void OnAIError(string errorMessage)

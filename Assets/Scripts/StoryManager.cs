@@ -1,45 +1,37 @@
-using System.IO;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class StoryManager : MonoBehaviour
 {
-    private string storyFilePath;
+    public StoryGenerator storyGenerator;  // Riferimento alla classe StoryGenerator
+    private string currentStory = "";      // La storia corrente generata
 
-    private void Start()
+    // Metodo per ottenere il contesto della storia dalle carte e dagli input di testo
+    public string GetStoryContext()
     {
-        // Percorso del file .txt per la storia
-        storyFilePath = Path.Combine(Application.persistentDataPath, "story.txt");
-
-        // Se il file non esiste, creane uno vuoto
-        if (!File.Exists(storyFilePath))
+        if (storyGenerator != null)
         {
-            File.WriteAllText(storyFilePath, "");
-        }
-    }
-
-    // Ottieni il contenuto attuale della storia
-    public string GetCurrentStory()
-    {
-        return File.ReadAllText(storyFilePath);
-    }
-
-    // Aggiungi nuovo testo alla storia e salvalo
-    public void AppendToStory(string newText)
-    {
-        File.AppendAllText(storyFilePath, newText + "\n");
-    }
-
-    // Carica la storia salvata (può essere usata all'inizio del gioco)
-    public void LoadStory()
-    {
-        if (File.Exists(storyFilePath))
-        {
-            string loadedStory = File.ReadAllText(storyFilePath);
-            Debug.Log("Storia caricata: " + loadedStory);
+            // Chiama il metodo CollectStoryContext di StoryGenerator per raccogliere il contesto
+            return storyGenerator.CollectStoryContext();
         }
         else
         {
-            Debug.LogWarning("Nessuna storia salvata trovata.");
+            Debug.LogError("StoryGenerator non assegnato a StoryManager!");
+            return "";
         }
+    }
+
+    // Metodo per aggiungere nuovo testo (suggerimento dell'IA) alla storia
+    public void AppendToStory(string newText)
+    {
+        currentStory += newText + "\n";  // Aggiunge il nuovo testo con una nuova riga
+        Debug.Log("Nuovo testo aggiunto alla storia: " + newText);
+    }
+
+    // Metodo per ottenere la storia corrente
+    public string GetCurrentStory()
+    {
+        return currentStory;  // Ritorna la storia corrente generata finora
     }
 }
