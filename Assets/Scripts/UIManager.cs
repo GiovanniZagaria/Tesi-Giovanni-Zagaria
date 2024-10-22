@@ -11,11 +11,16 @@ public class UIManager : MonoBehaviour
     public Button closeButton;
     public AIHelper aiHelper;
     public StoryManager storyManager;
+    public FlaskManager flaskManager; // Aggiungi il riferimento a FlaskManager
 
     private bool isTextboxVisible = false;
 
-    private void Start()
+    public void Start()
     {
+        // Avvia il server Flask quando parte l'interfaccia
+        flaskManager.StartFlaskServer();
+
+        // Nascondi la TextBox, il bottone "Copia", il pulsante "X" e il panel all'avvio
         storyTextbox.SetActive(false);
         copyButton.gameObject.SetActive(false);
         closeButton.gameObject.SetActive(false);
@@ -52,27 +57,25 @@ public class UIManager : MonoBehaviour
 
     private void OnAISuccess(string suggestion)
     {
-        if (storyTextbox != null)
+        TMP_Text tmpTextComponent = storyTextbox.GetComponent<TMP_Text>();
+        if (tmpTextComponent != null)
         {
-            var textComponent = storyTextbox.GetComponent<Text>();
-            if (textComponent == null)
-            {
-                textComponent = storyTextbox.GetComponent<TMP_Text>(); // Prova TMP_Text se Text è nullo
-            }
-            if (textComponent != null)
-            {
-                textComponent.text = suggestion;
-                storyManager.AppendToStory(suggestion);
-            }
-            else
-            {
-                Debug.LogError("Componente Text o TMP_Text mancante su storyTextbox.");
-            }
+            tmpTextComponent.text = suggestion;
         }
         else
         {
-            Debug.LogError("storyTextbox non assegnato in UIManager.");
+            Text uiTextComponent = storyTextbox.GetComponent<Text>();
+            if (uiTextComponent != null)
+            {
+                uiTextComponent.text = suggestion;
+            }
+            else
+            {
+                Debug.LogError("Nessun componente Text o TMP_Text trovato in storyTextbox.");
+            }
         }
+
+        storyManager.AppendToStory(suggestion);
     }
 
     private void OnAIError(string errorMessage)
@@ -82,19 +85,22 @@ public class UIManager : MonoBehaviour
 
     private void OnCopyButtonClicked()
     {
-        var textComponent = storyTextbox.GetComponent<Text>();
-        if (textComponent == null)
+        TMP_Text tmpTextComponent = storyTextbox.GetComponent<TMP_Text>();
+        if (tmpTextComponent != null)
         {
-            textComponent = storyTextbox.GetComponent<TMP_Text>();
-        }
-
-        if (textComponent != null)
-        {
-            GUIUtility.systemCopyBuffer = textComponent.text;
+            GUIUtility.systemCopyBuffer = tmpTextComponent.text;
         }
         else
         {
-            Debug.LogError("Non è stato possibile copiare il testo: nessun componente Text o TMP_Text trovato.");
+            Text uiTextComponent = storyTextbox.GetComponent<Text>();
+            if (uiTextComponent != null)
+            {
+                GUIUtility.systemCopyBuffer = uiTextComponent.text;
+            }
+            else
+            {
+                Debug.LogError("Non è stato possibile copiare il testo: nessun componente Text o TMP_Text trovato.");
+            }
         }
     }
 }

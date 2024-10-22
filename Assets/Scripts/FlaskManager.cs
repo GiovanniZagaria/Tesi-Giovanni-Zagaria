@@ -1,5 +1,5 @@
-using System.Diagnostics;
-using UnityEngine;
+using System.Diagnostics; 
+using UnityEngine;  // Assicurati di importare il corretto spazio di nomi per Unity
 
 public class FlaskManager : MonoBehaviour
 {
@@ -7,19 +7,18 @@ public class FlaskManager : MonoBehaviour
 
     void Start()
     {
-        StartFlaskServer(); // Avvia il server Flask quando l'applicazione Unity parte
+        StartFlaskServer();
     }
 
     private void StartFlaskServer()
     {
-        // Specifica il percorso di Python e lo script app.py
-        string pythonPath = @"C:\Users\miche\anaconda3\python.exe"; // Aggiorna con il tuo percorso di Python
-        string appPath = @"C:\Users\miche\OneDrive\Desktop\Giovanni\Tesi-Giovanni-Zagaria\Assets\FlaskApp\app.py"; // Percorso corretto di app.py
+        string pythonPath = @"C:\Users\miche\anaconda3\python.exe"; 
+        string appPath = @"C:\Users\miche\OneDrive\Desktop\Giovanni\FlaskApp\app.py"; 
 
         ProcessStartInfo startInfo = new ProcessStartInfo
         {
             FileName = pythonPath,
-            Arguments = $"\"{appPath}\"", // Aggiungi le virgolette per gestire gli spazi nel percorso
+            Arguments = $"\"{appPath}\"",
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,
@@ -29,17 +28,15 @@ public class FlaskManager : MonoBehaviour
         flaskProcess = new Process { StartInfo = startInfo };
         flaskProcess.Start();
 
-        Debug.Log("Flask server avviato.");
+        UnityEngine.Debug.Log("Flask server avviato.");
     }
 
     void OnApplicationQuit()
     {
         if (flaskProcess != null && !flaskProcess.HasExited)
         {
-            flaskProcess.Kill(); // Chiudi il processo Flask quando Unity si chiude
-            Debug.Log("Flask server fermato.");
+            flaskProcess.Kill();
+            UnityEngine.Debug.Log("Flask server fermato.");
         }
     }
 }
-
- 
