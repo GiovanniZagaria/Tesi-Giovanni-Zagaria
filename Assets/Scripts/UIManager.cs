@@ -10,17 +10,22 @@ public class UIManager : MonoBehaviour
     public Button copyButton;
     public Button closeButton;
     public AIHelper aiHelper;
-    public StoryManager storyManager;
-    public FlaskManager flaskManager; // Aggiungi il riferimento a FlaskManager
+    public StoryManager storyManager;  // Assicurati di avere un riferimento a StoryManager
 
     private bool isTextboxVisible = false;
 
-    public void Start()
+    private void Start()
     {
-        // Avvia il server Flask quando parte l'interfaccia
-        flaskManager.StartFlaskServer();
+        // Debug
+        if (helpButton == null) Debug.LogError("helpButton non assegnato!");
+        if (storyTextbox == null) Debug.LogError("storyTextbox non assegnato!");
+        if (panelBackground == null) Debug.LogError("panelBackground non assegnato!");
+        if (copyButton == null) Debug.LogError("copyButton non assegnato!");
+        if (closeButton == null) Debug.LogError("closeButton non assegnato!");
+        if (aiHelper == null) Debug.LogError("aiHelper non assegnato!");
+        if (storyManager == null) Debug.LogError("storyManager non assegnato!");
 
-        // Nascondi la TextBox, il bottone "Copia", il pulsante "X" e il panel all'avvio
+        // Nascondi la TextBox, i bottoni e il panel all'avvio
         storyTextbox.SetActive(false);
         copyButton.gameObject.SetActive(false);
         closeButton.gameObject.SetActive(false);
@@ -41,6 +46,7 @@ public class UIManager : MonoBehaviour
 
         if (isTextboxVisible)
         {
+            // Ottieni la storia corrente
             string currentStory = storyManager.GetCurrentStory();
             StartCoroutine(aiHelper.FetchSuggestion(currentStory, OnAISuccess, OnAIError));
         }
@@ -64,23 +70,16 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            Text uiTextComponent = storyTextbox.GetComponent<Text>();
-            if (uiTextComponent != null)
-            {
-                uiTextComponent.text = suggestion;
-            }
-            else
-            {
-                Debug.LogError("Nessun componente Text o TMP_Text trovato in storyTextbox.");
-            }
+            Debug.LogError("Nessun componente TMP_Text trovato in storyTextbox.");
         }
 
+        // Aggiungi il suggerimento dell'IA alla storia
         storyManager.AppendToStory(suggestion);
     }
 
     private void OnAIError(string errorMessage)
     {
-        Debug.LogError("Errore nell'AI: " + errorMessage);
+        Debug.LogError("Errore nell'IA: " + errorMessage);
     }
 
     private void OnCopyButtonClicked()
@@ -92,15 +91,17 @@ public class UIManager : MonoBehaviour
         }
         else
         {
-            Text uiTextComponent = storyTextbox.GetComponent<Text>();
-            if (uiTextComponent != null)
-            {
-                GUIUtility.systemCopyBuffer = uiTextComponent.text;
-            }
-            else
-            {
-                Debug.LogError("Non è stato possibile copiare il testo: nessun componente Text o TMP_Text trovato.");
-            }
+            Debug.LogError("Non è stato possibile copiare il testo: nessun componente TMP_Text trovato.");
         }
+    }
+
+    public void PlayerMakesChoice(string choice)
+    {
+        // Aggiungi la scelta alla storia
+        storyManager.AddChoice(choice);
+
+        // Invia la storia aggiornata all'IA
+        string currentStory = storyManager.GetCurrentStory();
+        StartCoroutine(aiHelper.FetchSuggestion(currentStory, OnAISuccess, OnAIError));
     }
 }
