@@ -32,7 +32,10 @@ public class AIHelper : MonoBehaviour
             else
             {
                 var responseText = request.downloadHandler.text;
+                Debug.Log("Risposta grezza dall'IA: " + responseText); // Log della risposta grezza
+
                 var jsonResponse = JsonUtility.FromJson<AIResponse>(responseText);
+                Debug.Log("Suggerimento ricevuto: " + jsonResponse.suggestion); // Log del suggerimento
                 onSuccess?.Invoke(jsonResponse.suggestion);
             }
         }

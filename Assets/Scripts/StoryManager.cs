@@ -1,89 +1,73 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class StoryManager : MonoBehaviour
 {
-    public StoryGenerator storyGenerator;  // Riferimento alla classe StoryGenerator
-    public FlaskManager flaskManager;      // Riferimento a FlaskManager
-    private string currentStory = "";      // La storia corrente generata
-    private List<string> choicesMade = new List<string>(); // Lista delle scelte fatte
+    private string currentStory = ""; // Storia attuale
+    private List<string> choicesMade = new List<string>(); // Scelte fatte dall'utente
+    private FlaskManager flaskManager;
 
-    // Metodo per ottenere il contesto della storia dalle carte e dagli input di testo
-    public string GetStoryContext()
+    void Start()
     {
-        if (storyGenerator != null)
-        {
-            // Chiama il metodo CollectStoryContext di StoryGenerator per raccogliere il contesto
-            return storyGenerator.CollectStoryContext();
-        }
-        else
-        {
-            Debug.LogError("StoryGenerator non assegnato a StoryManager!");
-            return "";
-        }
+        flaskManager = FindObjectOfType<FlaskManager>();
+        LoadStoryData(); // Carica i dati salvati all'avvio
     }
 
-    // Metodo per aggiungere nuovo testo (suggerimento dell'IA) alla storia
-   public void AppendToStory(string newText)
-{
-    currentStory += newText + "\n";  // Aggiunge il nuovo testo con una nuova riga
-    
-    // Esegui il log solo se il testo non è vuoto o null
-    if (!string.IsNullOrEmpty(newText))
-    {
-        UnityEngine.Debug.Log("Nuovo testo aggiunto alla storia: " + newText);
-    }
-    else
-    {
-        UnityEngine.Debug.LogWarning("Tentativo di aggiungere testo vuoto alla storia.");
-    }
-}
-
-
-    // Metodo per ottenere la storia corrente
-    public string GetCurrentStory()
-    {
-        return currentStory;  // Ritorna la storia corrente generata finora
-    }
-
-    // Metodo per aggiungere una scelta alla lista delle scelte fatte
+    // Aggiunge una scelta alla storia e la invia all'IA
     public void AddChoice(string choice)
     {
-        choicesMade.Add(choice);
-        currentStory += "Scelta: " + choice + "\n"; // Aggiungi la scelta alla storia
-        Debug.Log("Scelta aggiunta: " + choice);
+        if (!string.IsNullOrEmpty(choice))
+        {
+            choicesMade.Add(choice);
+            currentStory += " " + choice; // Aggiungi la scelta alla storia
+            flaskManager.SendChoicesToAI(choice); // Invia la scelta all'IA
+            Debug.Log("Choice added: " + choice); // Debug
+        }
+    }
 
-        // Invia la scelta all'API tramite FlaskManager
-        if (flaskManager != null)
+    // Aggiunge testo alla storia
+    public void AppendToStory(string newText)
+    {
+        if (!string.IsNullOrEmpty(newText))
         {
-            // Invia le scelte all'API per continuare la storia
-            string jsonData = CreateJsonFromChoices();
-            flaskManager.SendChoicesToAI(jsonData);
+            currentStory += " " + newText; // Aggiungi il nuovo testo alla storia
+            Debug.Log("Updated Story: " + currentStory); // Debug
         }
-        else
+    }
+
+    // Salva i dati della storia
+    public void SaveStoryData()
+    {
+        PlayerPrefs.SetString("CurrentStory", currentStory);
+        PlayerPrefs.SetString("ChoicesMade", string.Join(",", choicesMade)); // Salva le scelte come stringa
+        PlayerPrefs.Save();
+        Debug.Log("Story data saved."); // Debug
+    }
+
+    // Carica i dati della storia
+    public void LoadStoryData()
+    {
+        if (PlayerPrefs.HasKey("CurrentStory"))
         {
-            Debug.LogError("FlaskManager non assegnato a StoryManager!");
+            currentStory = PlayerPrefs.GetString("CurrentStory");
+            Debug.Log("Current story loaded: " + currentStory); // Debug
         }
+        if (PlayerPrefs.HasKey("ChoicesMade"))
+        {
+            choicesMade = new List<string>(PlayerPrefs.GetString("ChoicesMade").Split(',')); // Carica le scelte
+            Debug.Log("Choices loaded: " + string.Join(", ", choicesMade)); // Debug
+        }
+    }
+
+    // Metodo per ottenere la storia attuale
+    public string GetCurrentStory()
+    {
+        return currentStory;
     }
 
     // Metodo per ottenere tutte le scelte fatte
     public List<string> GetChoicesMade()
     {
-        return choicesMade; // Ritorna tutte le scelte fatte
-    }
-
-    // Metodo per creare un JSON con le scelte fatte
-    private string CreateJsonFromChoices()
-    {
-        // Crea un oggetto anonimo contenente la storia attuale e le scelte
-        var data = new
-        {
-            storyContext = GetStoryContext(),
-            choices = choicesMade
-        };
-
-        // Serializza l'oggetto in formato JSON
-        return JsonUtility.ToJson(data);
+        return choicesMade;
     }
 }
