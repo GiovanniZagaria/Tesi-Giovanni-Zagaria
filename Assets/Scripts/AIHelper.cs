@@ -2,13 +2,16 @@ using UnityEngine;
 using UnityEngine.Networking;
 using System.Collections;
 using System.Text;
+using System.Linq;
+
 
 public class AIHelper : MonoBehaviour
 {
-    private string apiEndpoint = "http://localhost:5000/get_suggestion"; // URL dell'app Flask
+    private string apiEndpoint = "http://localhost:5000/get_suggestion";
+
     public IEnumerator FetchSuggestion(string storyContext, System.Action<string> onSuccess, System.Action<string> onError)
     {
-        string sanitizedStory = ReplaceUnsupportedCharacters(storyContext); // Sostituisci i caratteri non supportati
+        string sanitizedStory = ReplaceUnsupportedCharacters(storyContext);
 
         var jsonContent = new
         {
@@ -33,13 +36,14 @@ public class AIHelper : MonoBehaviour
             else
             {
                 var responseText = request.downloadHandler.text;
-                Debug.Log("Risposta grezza dall'IA: " + responseText); // Log della risposta grezza
+                Debug.Log("Risposta grezza dall'IA: " + responseText);
 
                 try
                 {
                     var jsonResponse = JsonUtility.FromJson<AIResponse>(responseText);
-                    Debug.Log("Suggerimento ricevuto: " + jsonResponse.suggestion); // Log del suggerimento
-                    onSuccess?.Invoke(jsonResponse.suggestion);
+                    string suggestion = LimitSuggestionToTwoLines(jsonResponse.suggestion);
+                    Debug.Log("Suggerimento ricevuto: " + suggestion);
+                    onSuccess?.Invoke(suggestion);
                 }
                 catch (System.Exception e)
                 {
@@ -49,27 +53,28 @@ public class AIHelper : MonoBehaviour
         }
     }
 
+    private string LimitSuggestionToTwoLines(string suggestion)
+    {
+        var lines = suggestion.Split('\n');
+        return string.Join("\n", lines.Length > 2 ? lines.Take(2) : lines);
+    }
 
     private string ReplaceUnsupportedCharacters(string input)
     {
-        return input.Replace("’", "'") // Sostituisci apostrofo con uno standard
-                    .Replace("è", "e") // Sostituzioni di caratteri accentati
+        return input.Replace("’", "'")
+                    .Replace("è", "e")
                     .Replace("é", "e")
                     .Replace("à", "a")
                     .Replace("ù", "u")
                     .Replace("ò", "o")
-                    .Replace("’", "'")
-                    .Replace("“", "\"") // Sostituzioni di virgolette
+                    .Replace("“", "\"")
                     .Replace("”", "\"")
-                    .Replace("‘", "'")
-                    // Aggiungi altre sostituzioni secondo necessità
-                    ;
+                    .Replace("‘", "'");
     }
-
 
     [System.Serializable]
     public class AIResponse
     {
-        public string suggestion; // Campo per contenere il suggerimento ricevuto dall'API
+        public string suggestion;
     }
 }

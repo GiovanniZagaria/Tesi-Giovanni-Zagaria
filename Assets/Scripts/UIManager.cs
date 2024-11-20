@@ -6,30 +6,29 @@ public class UIManager : MonoBehaviour
 {
     public Button helpButton;
     public GameObject storyTextbox;
-    public GameObject panelBackground;
+    public TextMeshProUGUI tmpTextComponent;
     public Button copyButton;
     public Button closeButton;
     public AIHelper aiHelper;
     public StoryManager storyManager;  // Assicurati di avere un riferimento a StoryManager
+    public FlaskManager flaskManager;  // Riferimento al FlaskManager per inviare il testo
 
     private bool isTextboxVisible = false;
 
     private void Start()
     {
-        // Debug
         if (helpButton == null) Debug.LogError("helpButton non assegnato!");
-        if (storyTextbox == null) Debug.LogError("storyTextbox non assegnato!");
-        if (panelBackground == null) Debug.LogError("panelBackground non assegnato!");
+        if (storyTextbox == null) Debug.LogError("storyTextbox non assegnato!");       
         if (copyButton == null) Debug.LogError("copyButton non assegnato!");
         if (closeButton == null) Debug.LogError("closeButton non assegnato!");
         if (aiHelper == null) Debug.LogError("aiHelper non assegnato!");
         if (storyManager == null) Debug.LogError("storyManager non assegnato!");
+        if (flaskManager == null) Debug.LogError("flaskManager non assegnato!");
 
-        // Nascondi la TextBox, i bottoni e il panel all'avvio
         storyTextbox.SetActive(false);
         copyButton.gameObject.SetActive(false);
         closeButton.gameObject.SetActive(false);
-        panelBackground.SetActive(false);
+        
 
         helpButton.onClick.AddListener(OnHelpButtonClicked);
         copyButton.onClick.AddListener(OnCopyButtonClicked);
@@ -42,13 +41,27 @@ public class UIManager : MonoBehaviour
         storyTextbox.SetActive(isTextboxVisible);
         copyButton.gameObject.SetActive(isTextboxVisible);
         closeButton.gameObject.SetActive(isTextboxVisible);
-        panelBackground.SetActive(isTextboxVisible);
+        
 
         if (isTextboxVisible)
         {
-            // Ottieni la storia corrente
             string currentStory = storyManager.GetCurrentStory();
-            StartCoroutine(aiHelper.FetchSuggestion(currentStory, OnAISuccess, OnAIError));
+            TMP_Text tmpTextComponent = storyTextbox.GetComponent<TMP_Text>();
+
+            if (tmpTextComponent != null)
+            {
+                tmpTextComponent.text = "Caricamento...";  // Mostra "Caricamento..."
+            }
+
+            if (!string.IsNullOrEmpty(currentStory))
+            {
+                // Invia il testo direttamente al FlaskManager
+                flaskManager.SendChoiceAndStoryToAI("", currentStory, OnAISuccess);
+            }
+            else
+            {
+                Debug.LogWarning("La storia corrente è vuota, nessuna richiesta inviata all'IA.");
+            }
         }
     }
 
@@ -58,22 +71,22 @@ public class UIManager : MonoBehaviour
         storyTextbox.SetActive(false);
         copyButton.gameObject.SetActive(false);
         closeButton.gameObject.SetActive(false);
-        panelBackground.SetActive(false);
+        
     }
 
     private void OnAISuccess(string suggestion)
     {
-        TMP_Text tmpTextComponent = storyTextbox.GetComponent<TMP_Text>();
-        if (tmpTextComponent != null)
+        TMP_Text tmpTextComponentSuccess = tmpTextComponent.GetComponent<TMP_Text>();
+        if (tmpTextComponentSuccess != null)
         {
-            tmpTextComponent.text = suggestion;
+            tmpTextComponentSuccess.text = suggestion;
         }
         else
         {
             Debug.LogError("Nessun componente TMP_Text trovato in storyTextbox.");
         }
 
-        // Aggiungi il suggerimento dell'IA alla storia
+        // Aggiungi la risposta dell'IA alla storia
         storyManager.AppendToStory(suggestion);
     }
 
@@ -84,10 +97,10 @@ public class UIManager : MonoBehaviour
 
     private void OnCopyButtonClicked()
     {
-        TMP_Text tmpTextComponent = storyTextbox.GetComponent<TMP_Text>();
-        if (tmpTextComponent != null)
+        TMP_Text tmpTextComponentCopy = tmpTextComponent.GetComponent<TMP_Text>();
+        if (tmpTextComponentCopy != null)
         {
-            GUIUtility.systemCopyBuffer = tmpTextComponent.text;
+            GUIUtility.systemCopyBuffer = tmpTextComponentCopy.text;
         }
         else
         {
@@ -97,11 +110,8 @@ public class UIManager : MonoBehaviour
 
     public void PlayerMakesChoice(string choice)
     {
-        // Aggiungi la scelta alla storia
         storyManager.AddChoice(choice);
-
-        // Invia la storia aggiornata all'IA
         string currentStory = storyManager.GetCurrentStory();
-        StartCoroutine(aiHelper.FetchSuggestion(currentStory, OnAISuccess, OnAIError));
+        flaskManager.SendChoiceAndStoryToAI(choice, currentStory, OnAISuccess);
     }
 }

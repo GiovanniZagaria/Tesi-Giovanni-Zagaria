@@ -81,13 +81,19 @@ public class SaveLoad : MonoBehaviour
         // Invia i dati salvati sia come scelta che come storia all'API Flask, se disponibile
         if (flaskManager != null)
         {
-            flaskManager.SendChoiceAndStoryToAI(datiJson, dati.date);
+            flaskManager.SendChoiceAndStoryToAI(datiJson, dati.date, OnAISuccess);
             Debug.Log("Dati inviati all'API Flask: " + datiJson);
         }
         else
         {
             Debug.LogError("FlaskManager non è disponibile, impossibile inviare i dati all'API.");
         }
+    }
+
+    private void OnAISuccess(string suggestion)
+    {
+        Debug.Log("Suggerimento ricevuto: " + suggestion);
+        // Aggiungi qualsiasi azione necessaria per la risposta dell'IA qui
     }
 
     public void CaricaDati(int slot)

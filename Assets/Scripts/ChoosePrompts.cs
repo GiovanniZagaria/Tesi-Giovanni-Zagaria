@@ -50,62 +50,51 @@ public class ChoosePrompts : MonoBehaviour
             {
                 if (hit.collider == GetComponent<Collider>())
                 {
-                    // Cambia lo sprite e la texture
                     newSprite(gameObject.name);
                     ChangeTexture(gameObject.name);
 
-                    // Verifica se il testo è stato correttamente assegnato
                     if (testo == null)
                     {
                         Debug.LogError("Testo è null. Controlla se è assegnato correttamente.");
-                        return; // Esci se testo è null
+                        return;
                     }
 
                     testo.text = GetComponent<Text>().text;
-
-                    // Recupera il testo dalla pagina di sinistra
                     string promptText = testo.text;
                     Debug.Log("Testo della carta: " + promptText);
 
-                    // Controlla se il testo è presente
+                    // Verifica che promptText non sia vuoto
                     if (!string.IsNullOrEmpty(promptText))
                     {
-                        // Crea la richiesta per l'IA
-                        string requestToAI = $"Prendendo il testo: \"{promptText}\", questo è un testo contenuto in una carta, genera un suggerimento che risponda alla storia che sia brevissimo, massimo di due righe ";
-                        Debug.Log("Richiesta inviata all'IA: " + requestToAI);
+                        // Otteniamo la storia corrente
+                        string storyText = FindObjectOfType<StoryManager>().GetCurrentStory();
+                        Debug.Log("Testo della storia corrente: " + storyText);
 
-                        // Invia la richiesta all'IA
-                        StartCoroutine(FindObjectOfType<AIHelper>().FetchSuggestion(promptText, OnAISuccess, OnAIError));
+                        // Se la storia è vuota, passiamo una frase predefinita
+                        if (string.IsNullOrEmpty(storyText))
+                        {
+                            storyText = "Inizia la storia..."; // Stringa predefinita
+                            Debug.LogWarning("La storia era vuota, impostata la stringa iniziale.");
+                        }
+
+                        // Passiamo la scelta e la storia all'IA
+                        FindObjectOfType<FlaskManager>().SendChoiceAndStoryToAI(promptText, storyText, OnAISuccess);
+                        FindObjectOfType<StoryManager>().AddChoice(promptText);
                     }
                     else
                     {
-                        Debug.LogWarning("Nessun testo da inviare all'IA.");
+                        Debug.LogWarning("promptText è vuoto, nessuna richiesta inviata all'IA.");
                     }
-
-                    // Raccogliere il testo della storia
-                    string storyText = FindObjectOfType<StoryManager>().GetCurrentStory(); // Ottieni la storia corrente
-                    Debug.Log("Testo della storia corrente: " + storyText); // Debug
-
-                    // Invio di choice e storyText contemporaneamente a FlaskManager
-                    FindObjectOfType<FlaskManager>().SendChoiceAndStoryToAI(promptText, storyText);
-
-                    // Aggiungi la scelta e il testo al StoryManager
-                    FindObjectOfType<StoryManager>().AddChoice(promptText); // Aggiungi la scelta
-                    FindObjectOfType<StoryManager>().AppendToStory(storyText); // Aggiungi il testo
-
-                    // Verifica le scelte memorizzate
-                    var scelte = FindObjectOfType<StoryManager>().GetChoicesMade();
-                    Debug.Log("Scelte memorizzate: " + string.Join(", ", scelte));
                 }
             }
         }
     }
 
+
+
     private void OnAISuccess(string suggestion)
     {
-        // Gestisci la risposta dell'IA
         Debug.Log("Suggerimento ricevuto: " + suggestion);
-        // Aggiorna la storia o l'interfaccia utente qui
         FindObjectOfType<StoryManager>().AppendToStory(suggestion);
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ public class StoryManager : MonoBehaviour
             // Controlla che flaskManager sia disponibile prima di chiamare SendChoiceAndStoryToAI
             if (flaskManager != null)
             {
-                flaskManager.SendChoiceAndStoryToAI(choice, currentStory); // Invia sia la scelta che la storia all'IA
+                flaskManager.SendChoiceAndStoryToAI(choice, currentStory, OnAISuccess); // Invia sia la scelta che la storia all'IA
                 Debug.Log("Choice and current story sent to AI: " + choice + " | Current Story: " + currentStory); // Log della scelta e storia inviate
             }
             else
@@ -38,6 +39,12 @@ public class StoryManager : MonoBehaviour
                 Debug.LogError("FlaskManager è null, impossibile inviare la scelta e la storia all'IA.");
             }
         }
+    }
+
+    private void OnAISuccess(string suggestion)
+    {
+        Debug.Log("Suggerimento ricevuto: " + suggestion);
+        AppendToStory(suggestion); // Aggiorna la storia con il suggerimento ricevuto
     }
 
     // Aggiunge testo alla storia

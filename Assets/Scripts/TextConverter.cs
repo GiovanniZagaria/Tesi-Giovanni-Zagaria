@@ -1,8 +1,6 @@
-using System.IO;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 
 public class TextConverter : MonoBehaviour
 {
@@ -22,6 +20,8 @@ public class TextConverter : MonoBehaviour
     private Texture imageOn;
     private Texture imageOff;
     public static bool isOpen;
+
+    public TextoFlask textoFlask; // Riferimento alla classe TextoFlask
 
     // Start is called before the first frame update
     void Start()
@@ -44,19 +44,22 @@ public class TextConverter : MonoBehaviour
         textInputField = inputfield.GetComponent<TMP_InputField>();
         npage = numpage.GetComponent<TMP_Text>();
 
-
         next.gameObject.SetActive(false);
         prev.gameObject.SetActive(false);
         npage.gameObject.SetActive(false);
+
+        // Assicurati che TextoFlask sia assegnato correttamente
+        if (textoFlask == null)
+        {
+            Debug.LogError("TextoFlask non assegnato nel TextConverter!");
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-
         if (Input.GetMouseButtonDown(0) && !MenuController.isPaused)
         {
-
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             if (Physics.Raycast(ray, out RaycastHit hit))
@@ -111,8 +114,17 @@ public class TextConverter : MonoBehaviour
 
         text.text = newtext;
 
+        // Invia il testo scritto a TextoFlask quando non è vuoto
+        if (!string.IsNullOrEmpty(textInputField.text.Trim()))
+        {
+            if (textoFlask != null)
+            {
+                textoFlask.InviaTestoAlFlask(newtext);
+            }
+        }
     }
 
+    // Funzione per passare al prossimo capitolo/pagina
     public void Nextpage()
     {
         if (text.pageToDisplay < text.textInfo.pageCount)
@@ -120,6 +132,7 @@ public class TextConverter : MonoBehaviour
         npage.text = text.pageToDisplay + "/" + text.textInfo.pageCount;
     }
 
+    // Funzione per tornare alla pagina precedente
     public void Prevpage()
     {
         if (text.pageToDisplay > 1)
@@ -127,6 +140,7 @@ public class TextConverter : MonoBehaviour
         npage.text = text.pageToDisplay + "/" + text.textInfo.pageCount;
     }
 
+    // Funzione per chiudere la scrittura
     public void Close()
     {
         textInputField.gameObject.SetActive(false);
@@ -134,20 +148,16 @@ public class TextConverter : MonoBehaviour
         isOpen = false;
     }
 
+    // Funzione per cambiare la texture dell'immagine
     void ChangeRawImageTextureByPath(bool check)
     {
-        // Assicurati che la path dell'immagine non sia vuota
         if (check)
         {
-            // Carica la texture dalla path dell'immagine
             Texture texture = imageOn;
-
             if (texture != null)
             {
-                // Verifica se il componente esiste prima di tentare di cambiarlo
                 if (image != null)
                 {
-                    // Cambia la texture della RawImage
                     image.texture = texture;
                 }
                 else
@@ -162,14 +172,11 @@ public class TextConverter : MonoBehaviour
         }
         else
         {
-           Texture texture = imageOff;
-
+            Texture texture = imageOff;
             if (texture != null)
             {
-                // Verifica se il componente esiste prima di tentare di cambiarlo
                 if (image != null)
                 {
-                    // Cambia la texture della RawImage
                     image.texture = texture;
                 }
                 else
@@ -184,6 +191,7 @@ public class TextConverter : MonoBehaviour
         }
     }
 
+    // Funzione per aggiornare l'icona del pulsante "V" se è stato scritto o no
     public void isWritten()
     {
         if (string.IsNullOrEmpty(textInputField.text.Trim()))
@@ -196,4 +204,3 @@ public class TextConverter : MonoBehaviour
         }
     }
 }
-
